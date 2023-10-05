@@ -36,7 +36,7 @@ NeuralNetwork::NeuralNetwork()
     printf("largest size (internal): %d\n", heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
     
     // get model (.tflite) from flash
-    model = tflite::GetModel(model_f1_tenth_tflite);
+    model = tflite::GetModel(f1_tenth_model_tflite);
     if (model->version() != TFLITE_SCHEMA_VERSION)
     {
         MicroPrintf("Model provided is schema version %d not equal to supported "
@@ -65,17 +65,17 @@ NeuralNetwork::NeuralNetwork()
     if (allocate_status != kTfLiteOk)
     {
         MicroPrintf("AllocateTensors() failed");
-        //return;
+        return;
     }
     
     size_t used_bytes = interpreter->arena_used_bytes();
     MicroPrintf("Used bytes %d\n", used_bytes);
-/*
+
     // Obtain pointers to the model's input and output tensors.
     input = interpreter->input(0);
     output = interpreter->output(0);
 
-    printf("tensor_arena: %p, input: %p\n", tensor_arena, input->data.uint8);*/
+    printf("tensor_arena: %p, input: %p\n", tensor_arena, input->data.uint8);
 }
 
 
