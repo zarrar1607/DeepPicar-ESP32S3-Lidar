@@ -1,117 +1,94 @@
 #include <Arduino.h>
 #include "NeuralNetwork.h"
-#include "RPLidar.h"
-#include <HardwareSerial.h>
+#include "rplidar_driver_impl.h"
+
 #define RPLIDAR_MOTOR D0
-HardwareSerial MySerial0(0);
+
 RPLidar lidar;
 NeuralNetwork *nn;
-const int NUM_POINTS = 360;
-float distances[NUM_POINTS];
+const int MAX_NUM_POINTS = 360;
+float distances[MAX_NUM_POINTS];
+char report[80];
+int point_count = 0;
+rplidar_response_measurement_node_hq_t nodes[60];
+size_t nodeCount = 60; // variable will be set to number of received measurement by reference
 
-static int count = 0;
 unsigned long startTime;
 
-const int num_lidar_range_values = 1081;
+void printSampleDuration()
+{
+  rplidar_response_sample_rate_t sampleInfo;
+  lidar.getSampleDuration_uS(sampleInfo);
+
+  snprintf(report, sizeof(report), "TStandard: %d[us] TExpress: %d[us]", sampleInfo.std_sample_duration_us, sampleInfo.express_sample_duration_us);
+  Serial.println(report);
+  delay(1000);
+}
+
 void setup()
 {
-  Serial.begin(115200);
-  lidar.begin(MySerial0);
-  Serial.println("Lidar Readly");
   pinMode(RPLIDAR_MOTOR, OUTPUT);
+  lidar.begin();
+  delay(1000);
+  Serial.begin(115200);
+  digitalWrite(RPLIDAR_MOTOR, HIGH); // turn on the motorz
 
-  delay(10000);
+  // nn = new NeuralNetwork();
 
-  nn = new NeuralNetwork();
-
-  delay(10000);
+  memset(distances, 0, MAX_NUM_POINTS);
+  printSampleDuration();
+  delay(1000);
 }
+
 void loop()
 {
-  Serial.println("Done Allocating");
+  startTime = millis();
 
-  if (IS_OK(lidar.waitPoint()))
+  if (!lidar.isScanning())
   {
-    if (count == 0)
-    {
-      startTime = millis();
-    }
-    // Serial.println("Getting Data");
-    float distance = lidar.getCurrentPoint().distance; // distance value in mm unit
-    float angle = lidar.getCurrentPoint().angle;       // anglue value in degree
-    bool startBit = lidar.getCurrentPoint().startBit;  // whether this point is belong to a new scan
-    byte quality = lidar.getCurrentPoint().quality;    // quality of the current measurement
-
-    Serial.print("Distance (mm): ");
-    Serial.println(distance);
-
-    Serial.print("Angle (degrees): ");
-    Serial.println(angle);
-
-    // Map angle to array index
-    int index = int(angle) % NUM_POINTS;
-    // Store the distance at the corresponding angle index
-    distances[index] = distance;
-    count++; // Increment the point count
-
-    // Check if we have received all 360 points
-    if (count == NUM_POINTS)
-    {
-      unsigned long elapsedTime = millis() - startTime;
-      // Print the array of distances
-      Serial.println("Distances array:");
-      for (int i = 0; i < NUM_POINTS; i++)
-      {
-        Serial.print("Index ");
-        Serial.print(i);
-        Serial.print(", Angle ");
-        Serial.print((360.0 / NUM_POINTS) * i); // Angle corresponding to the index
-        Serial.print(" degrees, Distance ");
-        Serial.println(distances[i]);
-      }
-      Serial.print("Time for one full scan: ");
-      Serial.print(elapsedTime);
-      Serial.println(" ms");
-      // Reset the count for the next round
-      count = 0;
-
-
-      
-      float *inp_ptr = nn->getInputBuffer();
-      for (int i = 0; i < num_lidar_range_values; ++i)
-      {
-        float randomValue = random(0, 91); // Generates a random float between 0 and 90
-        inp_ptr[i] = randomValue;
-      }
-      unsigned long startTimeNN = millis(); // Record the start time
-      nn->predict();
-      unsigned long endTimeNN = millis(); // Record the end time
-
-      unsigned long executionTimeNN = endTimeNN - startTimeNN;
-      Serial.print("Prediction Time: ");
-      Serial.print(executionTimeNN);
-      Serial.println(" milliseconds");
-
-      float *out_ptr = nn->getOutput();
-      Serial.printf("%f %f\n", out_ptr[0], out_ptr[1]);
-
-      delay(10000);
-    }
+    Serial.println("Not scanning");
+    lidar.startScanNormal(true);
+    digitalWrite(RPLIDAR_MOTOR, HIGH); // turn on the motor
+    delay(10);
   }
   else
   {
-    Serial.println("Stop Motor");
-    analogWrite(RPLIDAR_MOTOR, 0);
-    rplidar_response_device_info_t info;
-    Serial.println("Detecting");
-    if (IS_OK(lidar.getDeviceInfo(info, 100)))
+    // loop needs to be send called every loop
+    for (int i = 0; i < 60; ++i)
     {
-      Serial.println("Found it");
-      lidar.startScan();
+      if (IS_FAIL(lidar.loopScanData()))
+      {
+        Serial.println("Loop scan data failed");
+      }
+    }
+    // create object to hold received data for processing
 
-      Serial.println("Start Motor");
-      analogWrite(RPLIDAR_MOTOR, 255);
-      delay(5000);
+    u_result ans = lidar.grabScanData(nodes, nodeCount);
+    if (IS_OK(ans))
+    {
+      // Serial.println("ans is ok");
+      float distance_in_meters, angle;
+      int idx;
+      for (size_t i = 0; i < nodeCount; ++i)
+      {
+        // convert to standard units
+        angle = nodes[i].angle_z_q14 * 90.f / (1 << 14);
+        distance_in_meters = nodes[i].dist_mm_q2 / 1000.f / (1 << 2);
+        idx = (int)roundf(angle);
+        distances[idx % MAX_NUM_POINTS] = distance_in_meters;
+        // snprintf(report, sizeof(report), "%.2f %.2f %d", distance_in_meters, angle_in_degrees, nodes[i].quality);
+        // Serial.println(report);
+      }
+    }
+
+    Serial.print("newscan");
+    byte *p = (byte *)distances;
+    for (int i = 0; i < sizeof(distances); i++)
+    {
+      Serial.write(p[i]);
     }
   }
+
+  // unsigned long elapsedTime = millis() - startTime;
+  // Serial.println(elapsedTime);
 }
