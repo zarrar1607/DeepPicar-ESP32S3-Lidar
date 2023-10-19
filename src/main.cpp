@@ -41,7 +41,7 @@ float map(float x, float in_min, float in_max, float out_min, float out_max) {
     }
     const float rise = out_max - out_min;
     const float delta = x - in_min;
-    return (delta * rise) / run + out_min;
+    return (float)((delta * rise) / run + out_min);
 }
 
 void printSampleDuration()
@@ -90,7 +90,7 @@ void loop()
   else
   {
     // loop needs to be send called every loop
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 60; ++i)
     {
       if (IS_FAIL(lidar.loopScanData()))
       {
@@ -131,19 +131,20 @@ void loop()
   }
   float *inp_ptr = nn->getInputBuffer();
 
-  for (int i = 0; i < MAX_NUM_POINTS; ++i)
+  for (int i = 45, j = 0; i < MAX_NUM_POINTS-45 && j < MAX_NUM_POINTS; ++i, j++)
   {
-    inp_ptr[i] = distances[i];
+    inp_ptr[j] = distances[i];
   }
   nn->predict();
   float *out_ptr = nn->getOutput();
 
   float dir = out_ptr[0];
-  int servo_val = (int)map(dir,-.3, .3, 130., 50.);
+  // int servo_val = (int) ((100. - (map(dir,-.35, .35, 50., 130.) - 50.))+ 50.);
+  int servo_val = (float) map(dir,-.35, .35, 130., 60.); //130 50
   float speed = out_ptr[1];
-  int rpm = map(speed,-1.0, 1.0, 5000., 6000.);
-  // Serial.printf("%f %f\n", out_ptr[0], out_ptr[1]);
-  // Serial.printf("Servo Angle: %d %d\n", servo_val, rpm);
+  int rpm = map(speed,-1.0, 1.0, 5500., 6500.);
+  // Serial.printf("Servo Value: %f %f\n", out_ptr[0], out_ptr[1]);
+  Serial.printf("Servos: %f %d\n", dir, servo_val);
 
   myservo.write(servo_val);
   vesc.setRPM(rpm);

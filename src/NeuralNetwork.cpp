@@ -19,7 +19,7 @@
 constexpr int kTensorArenaSize = 32 * 1024; // Adjust the size accordingly
 
 // Assume num_lidar_range_values is 1081
-const int num_lidar_range_values = 1081;
+const int num_lidar_range_values = 360;
 const int tensor_input_shape[] = {1, num_lidar_range_values, 1}; // Batch size 1, 1081 values, 1 channel
 const int tensor_output_shape[] = {1, 2};                        // Batch size 1, 2 output values
 
