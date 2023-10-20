@@ -65,8 +65,8 @@ public:
 
     bool begin();     
     bool isScanning();     
-    bool isConnected();     
-    u_result reset(_u32 timeout = DEFAULT_TIMEOUT);
+    bool isConnected();   
+        u_result reset(_u32 timeout = DEFAULT_TIMEOUT);
     u_result getAllSupportedScanModes(std::vector<RplidarScanMode>& outModes, _u32 timeoutInMs = DEFAULT_TIMEOUT);
     u_result getTypicalScanMode(_u16& outMode, _u32 timeoutInMs = DEFAULT_TIMEOUT);
     u_result checkSupportConfigCommands(bool& outSupport, _u32 timeoutInMs = DEFAULT_TIMEOUT);
