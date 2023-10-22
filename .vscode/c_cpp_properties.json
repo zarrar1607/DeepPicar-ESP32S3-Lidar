@@ -10,6 +10,8 @@
             "includePath": [
                 "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/include",
                 "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/src",
+                "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/.pio/libdeps/seeed_xiao_esp32s3/ESP32TimerInterrupt/src",
+                "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/.pio/libdeps/seeed_xiao_esp32s3/ESP32Servo/src",
                 "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/.pio/libdeps/seeed_xiao_esp32s3/ESP_TF/src",
                 "C:/Users/zarra/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/newlib/platform_include",
                 "C:/Users/zarra/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include",
@@ -245,6 +247,8 @@
                 "path": [
                     "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/include",
                     "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/src",
+                    "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/.pio/libdeps/seeed_xiao_esp32s3/ESP32TimerInterrupt/src",
+                    "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/.pio/libdeps/seeed_xiao_esp32s3/ESP32Servo/src",
                     "C:/Users/zarra/Downloads/DeepPicar-ESP32S3-main/DeepPicar-ESP32S3-Lidar/.pio/libdeps/seeed_xiao_esp32s3/ESP_TF/src",
                     "C:/Users/zarra/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/newlib/platform_include",
                     "C:/Users/zarra/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/freertos/include",
