@@ -4,7 +4,7 @@
 #include "VescUart-master/src/VescUart.h"
 #include <ESP32Servo.h>
 #include "lidar_data.h"
-//#define DATA_COLLECTION
+// #define DATA_COLLECTION
 
 #define RPLIDAR_MOTOR D0
 
@@ -62,7 +62,7 @@ void setup()
   delay(1000);
   digitalWrite(RPLIDAR_MOTOR, HIGH); // turn on the motorz
 
-  memset(distances, 0, MAX_NUM_POINTS*sizeof(float));
+  memset(distances, 0, MAX_NUM_POINTS * sizeof(float));
   printSampleDuration();
 
   Serial.begin(115200); // TODO  what to do this?
@@ -72,25 +72,37 @@ void setup()
   vesc.setSerialPort(&MySerial1);
   // pinMode(servoPin, OUTPUT);
   myservo.attach(servoPin);
-
+  
+  // delay(5000);
   nn = new NeuralNetwork();
 
   // float *inp_ptr = nn->getInputBuffer();
   // float *out_ptr = nn->getOutput();
-  // for(int  j = 0; j < 10; j++){
 
-  //     for(int i = 0; i< 270; i++)
-  //       inp_ptr[i] = LidarData[j][i];
-  //     nn->predict();
+  // unsigned long totalTime = 0;
+  // for (int j = 0; j < 10; j++)
+  // {
 
+  //   for (int i = 0; i < 270; i++)
+  //     inp_ptr[i] = LidarData[j][i];
 
-  //     float dir = out_ptr[0];
-  //     int servo_val = (float)map(dir, -.35, .35, 120., 60.); 
-  //     float speed = out_ptr[1];
-  //     int rpm = map(speed, -1.0, 1.0, 3500., 5500.);
-  //     Serial.printf("Servos: %f %d\n", dir, servo_val);
+  //   unsigned long startTime = millis(); // Record the start time
+  //   nn->predict();
+  //   unsigned long predictionTime = millis() - startTime; // Calculate prediction time
+
+  //   float dir = out_ptr[0];
+  //   int servo_val = (float)map(dir, -.35, .35, 120., 60.);
+  //   float speed = out_ptr[1];
+  //   int rpm = map(speed, -1.0, 1.0, 3500., 5500.);
+  //   totalTime += predictionTime; // Accumulate prediction times
+
+  //   Serial.printf("%d) Servos: %f, Speed %f, Prediction Time: %lu ms\n", j, dir, speed, predictionTime);
+
   // }
+  // unsigned long averagePredictionTime = totalTime / 10; // Calculate the average prediction time
+  // Serial.printf("Average Prediction Time: %lu ms\n", averagePredictionTime);
 
+  // delay(50000);
 
 #endif
   delay(1000);
@@ -105,12 +117,12 @@ void loop()
     Serial.println("Not scanning");
     lidar.startScanNormal(true);
     analogWrite(RPLIDAR_MOTOR, 255); // turn on the motor
-    //delay(10);
+    // delay(10);
   }
   else
   {
     // loop needs to be send called every loop
-    memset(distances, 0, MAX_NUM_POINTS*sizeof(float));
+    memset(distances, 0, MAX_NUM_POINTS * sizeof(float));
     for (int i = 0; i < 360; ++i)
     {
       if (IS_FAIL(lidar.loopScanData()))
@@ -144,18 +156,18 @@ void loop()
 #ifdef DATA_COLLECTION
     Serial.print("newscan");
     byte *p = (byte *)distances;
-    //for (int i = 0; i < sizeof(distances); i++)
+    // for (int i = 0; i < sizeof(distances); i++)
     for (int i = 45; i < MAX_NUM_POINTS - 45; ++i)
     {
-      for(int j=0; j<sizeof(float); ++j)
-        Serial.write(p[i*sizeof(float)+j]);
+      for (int j = 0; j < sizeof(float); ++j)
+        Serial.write(p[i * sizeof(float) + j]);
     }
   }
 #else
   }
   float *inp_ptr = nn->getInputBuffer();
 
-  for (int i = 45, j = 0; i < MAX_NUM_POINTS - 45 && j < MAX_NUM_POINTS-90; ++i, j++)
+  for (int i = 45, j = 0; i < MAX_NUM_POINTS - 45 && j < MAX_NUM_POINTS - 90; ++i, j++)
   {
     inp_ptr[j] = distances[i];
   }
@@ -167,7 +179,7 @@ void loop()
   int servo_val = (int)map(dir, -.35, .35, 150., 30.); // 130 50 -->works
   // int servo_val = (float) map(dir,-.35, .35, 130., 0.);
   float speed = out_ptr[1];
-  //int rpm = map(speed, -1.0, 1.0, 5000., 7000.);
+  // int rpm = map(speed, -1.0, 1.0, 5000., 7000.);
   int rpm = map(speed, 0.0, 1.0, 9000., 12000.);
   // Serial.printf("Servo Value: %f %f\n", out_ptr[0], out_ptr[1]);
   Serial.printf("Servos: %f %d\n", dir, servo_val);

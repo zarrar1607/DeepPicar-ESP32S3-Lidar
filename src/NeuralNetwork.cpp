@@ -44,7 +44,9 @@ NeuralNetwork::NeuralNetwork()
     }
     tflite::AllOpsResolver micro_op_resolver;
 
-    tensor_arena = (uint8_t *)heap_caps_malloc(kTensorArenaSize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    //tensor_arena = (uint8_t *)heap_caps_malloc(kTensorArenaSize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    tensor_arena = (uint8_t *)heap_caps_malloc(kTensorArenaSize, MALLOC_CAP_DEFAULT | MALLOC_CAP_8BIT);
+    
     if (tensor_arena == NULL)
     {
         printf("Couldn't allocate memory of %d bytes\n", kTensorArenaSize);
