@@ -1,11 +1,11 @@
-// #include <ESP_TF.h>
+#include <ESP_TF.h>
 
-#if !defined(CONFIG_NN_OPTIMIZED)
-#error "CONFIG_NN_OPTIMIZED"
-#endif
-#if !defined(CONFIG_IDF_TARGET_ESP32S3)
-#error "CONFIG_IDF_TARGET_ESP32S3"
-#endif
+// #if !defined(CONFIG_NN_OPTIMIZED)
+// #error "CONFIG_NN_OPTIMIZED"
+// #endif
+// #if !defined(CONFIG_IDF_TARGET_ESP32S3)
+// #error "CONFIG_IDF_TARGET_ESP32S3"
+// #endif
 
 #include "NeuralNetwork.h"
 
@@ -16,12 +16,10 @@
 
 // int kTensorArenaSize = 1024 * 1024;
 //  Define the tensor arena and tensor arena size
-constexpr int kTensorArenaSize = 1024 * 1024; // Adjust the size accordingly
+constexpr int kTensorArenaSize = 40000;//1081 * 1081; // Adjust the size accordingly
 
 // Assume num_lidar_range_values is 1081
-const int num_lidar_range_values = 270;
-const int tensor_input_shape[] = {1, num_lidar_range_values, 1}; // Batch size 1, 1081 values, 1 channel
-const int tensor_output_shape[] = {1, 2};                        // Batch size 1, 2 output values
+const int num_lidar_range_values = 1081;                       // Batch size 1, 2 output values
 
 // Define the input and output tensors
 TfLiteTensor *input_tensor;

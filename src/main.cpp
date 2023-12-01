@@ -4,7 +4,7 @@
 #include "VescUart-master/src/VescUart.h"
 #include <ESP32Servo.h>
 #include "lidar_data.h"
-// #define DATA_COLLECTION
+//#define DATA_COLLECTION
 
 #define RPLIDAR_MOTOR D0
 
@@ -62,7 +62,7 @@ void setup()
   delay(1000);
   digitalWrite(RPLIDAR_MOTOR, HIGH); // turn on the motorz
 
-  memset(distances, 0, MAX_NUM_POINTS);
+  memset(distances, 0, MAX_NUM_POINTS*sizeof(float));
   printSampleDuration();
 
   Serial.begin(115200); // TODO  what to do this?
@@ -104,12 +104,13 @@ void loop()
   {
     Serial.println("Not scanning");
     lidar.startScanNormal(true);
-    digitalWrite(RPLIDAR_MOTOR, HIGH); // turn on the motor
-    delay(10);
+    analogWrite(RPLIDAR_MOTOR, 255); // turn on the motor
+    //delay(10);
   }
   else
   {
     // loop needs to be send called every loop
+    memset(distances, 0, MAX_NUM_POINTS*sizeof(float));
     for (int i = 0; i < 360; ++i)
     {
       if (IS_FAIL(lidar.loopScanData()))
@@ -129,7 +130,7 @@ void loop()
       {
         // convert to standard units
         distance_in_meters = nodes[i].dist_mm_q2 / 1000.f / (1 << 2);
-        if (distance_in_meters > 0.15)
+        if (distance_in_meters > 0.15 && distance_in_meters < 4.0)
         {
           angle = nodes[i].angle_z_q14 * 90.f / (1 << 14);
           idx = (int)roundf(angle);
@@ -143,16 +144,18 @@ void loop()
 #ifdef DATA_COLLECTION
     Serial.print("newscan");
     byte *p = (byte *)distances;
-    for (int i = 0; i < sizeof(distances); i++)
+    //for (int i = 0; i < sizeof(distances); i++)
+    for (int i = 45; i < MAX_NUM_POINTS - 45; ++i)
     {
-      Serial.write(p[i]);
+      for(int j=0; j<sizeof(float); ++j)
+        Serial.write(p[i*sizeof(float)+j]);
     }
   }
 #else
   }
   float *inp_ptr = nn->getInputBuffer();
 
-  for (int i = 45, j = 0; i < MAX_NUM_POINTS - 45 && j < MAX_NUM_POINTS; ++i, j++)
+  for (int i = 45, j = 0; i < MAX_NUM_POINTS - 45 && j < MAX_NUM_POINTS-90; ++i, j++)
   {
     inp_ptr[j] = distances[i];
   }
@@ -164,7 +167,8 @@ void loop()
   int servo_val = (int)map(dir, -.35, .35, 150., 30.); // 130 50 -->works
   // int servo_val = (float) map(dir,-.35, .35, 130., 0.);
   float speed = out_ptr[1];
-  int rpm = map(speed, -1.0, 1.0, 5000., 7000.);
+  //int rpm = map(speed, -1.0, 1.0, 5000., 7000.);
+  int rpm = map(speed, 0.0, 1.0, 9000., 12000.);
   // Serial.printf("Servo Value: %f %f\n", out_ptr[0], out_ptr[1]);
   Serial.printf("Servos: %f %d\n", dir, servo_val);
 
